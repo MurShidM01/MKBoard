@@ -26,6 +26,24 @@ param(
 )
 
 # --------------------------------------------------------------------------- #
+#  Determine script location (handle both local and remote / irm | iex usage)
+# --------------------------------------------------------------------------- #
+$ScriptDir = $null
+if ($MyInvocation.MyCommand.Path) {
+    $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+} else {
+    Write-Host "Downloading MKBoard from GitHub..." -ForegroundColor Yellow
+    $tmpDir = Join-Path $env:TEMP "MKBoard-install"
+    if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
+    New-Item -ItemType Directory -Path $tmpDir -Force | Out-Null
+    $zipUrl = "https://github.com/MurShidM01/MKBoard/archive/refs/heads/main.zip"
+    Invoke-WebRequest -Uri $zipUrl -OutFile (Join-Path $tmpDir "repo.zip")
+    Expand-Archive -Path (Join-Path $tmpDir "repo.zip") -DestinationPath $tmpDir -Force
+    $ScriptDir = Join-Path $tmpDir "MKBoard-main"
+    Write-OK "Downloaded to $ScriptDir"
+}
+
+# --------------------------------------------------------------------------- #
 #  Self-elevate to Administrator (required for System32 + HKLM registry).
 #  The chosen -Action / -Silent flags are forwarded to the elevated instance.
 # --------------------------------------------------------------------------- #
@@ -34,12 +52,13 @@ $principal = New-Object Security.Principal.WindowsPrincipal(
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     Write-Host "Requesting administrator privileges..." -ForegroundColor Yellow
     try {
+        $scriptPath = if ($MyInvocation.MyCommand.Path) { $MyInvocation.MyCommand.Path } else { Join-Path $ScriptDir "Install.ps1" }
         $fwd = "-Action $Action"
         if ($Silent) { $fwd += " -Silent" }
         $psi = New-Object Diagnostics.ProcessStartInfo
-        $psi.FileName  = (Get-Process -Id $PID).Path   # the powershell.exe running us
+        $psi.FileName  = (Get-Process -Id $PID).Path
         $psi.Verb      = 'runas'
-        $psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" $fwd"
+        $psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" $fwd"
         [Diagnostics.Process]::Start($psi) | Out-Null
     } catch {
         Write-Host "Administrator rights are required. Installation cancelled." -ForegroundColor Red
@@ -51,7 +70,6 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 # --------------------------------------------------------------------------- #
 #  Constants
 # --------------------------------------------------------------------------- #
-$ScriptDir   = Split-Path -Parent $MyInvocation.MyCommand.Path
 $KLID        = '00000859'                    # Sindhi (Pakistan) layout id
 $LayoutId    = '00d9'                         # custom layout ordinal
 $DllName     = 'MKBoard.dll'
