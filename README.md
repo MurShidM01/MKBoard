@@ -23,7 +23,7 @@ AltGr support · extended characters · ligatures · AMD64 & ARM64*
 > Run in **PowerShell as Administrator**
 
 ```powershell
-irm "https://github.com/MurShidM01/MKBoard/blob/main/install.ps1?raw=1" | iex
+irm "https://github.com/MurShidM01/MKBoard/blob/main/Install.ps1?raw=1" | iex
 ```
 
 Reboot → press **Win + Space** → select **Sindhi**. Done.
