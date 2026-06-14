@@ -26,6 +26,15 @@ param(
 )
 
 # --------------------------------------------------------------------------- #
+#  Helpers
+# --------------------------------------------------------------------------- #
+function Write-Step($n, $m) { Write-Host "  [$n] $m" -ForegroundColor Gray }
+function Write-OK($m)        { Write-Host "      $m" -ForegroundColor Green }
+function Write-Warn2($m)     { Write-Host "      $m" -ForegroundColor Yellow }
+function Write-Err($m)       { Write-Host "      $m" -ForegroundColor Red }
+function Write-Title($m)     { Write-Host "`n$m" -ForegroundColor Cyan }
+
+# --------------------------------------------------------------------------- #
 #  Determine script location (handle both local and remote / irm | iex usage)
 # --------------------------------------------------------------------------- #
 $ScriptDir = $null
@@ -81,15 +90,6 @@ $LangTag     = 'sd-Arab-PK'                    # BCP-47 tag from the .klc LOCALE
 $LangTagAlt  = 'sd-Arab'                       # Windows often normalises to this
 $Tip         = '0859:00000859'                 # langID:KLID input method tip
 $LayoutKey   = "HKLM:\SYSTEM\CurrentControlSet\Control\Keyboard Layouts\$KLID"
-
-# --------------------------------------------------------------------------- #
-#  Helpers
-# --------------------------------------------------------------------------- #
-function Write-Step($n, $m) { Write-Host "  [$n] $m" -ForegroundColor Gray }
-function Write-OK($m)        { Write-Host "      $m" -ForegroundColor Green }
-function Write-Warn2($m)     { Write-Host "      $m" -ForegroundColor Yellow }
-function Write-Err($m)       { Write-Host "      $m" -ForegroundColor Red }
-function Write-Title($m)     { Write-Host "`n$m" -ForegroundColor Cyan }
 
 function Get-ArchFolder {
     # Returns 'arm64' or 'amd64' (covers WOW emulation via ARCHITEW6432).
